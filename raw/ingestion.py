@@ -1,4 +1,5 @@
 #%%
+import argparse
 import datetime
 import requests
 import boto3
@@ -45,15 +46,27 @@ class Ingestor:
             self.params['page'] += 1
             datetime_start = datetime.datetime.fromisoformat(data[-1]['created_at']).date()
 
+def main():
 
+    datetime_now = datetime.datetime.now()
+    date_now = datetime_now.strftime("%Y-%m-%d")
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--date_start", default=date_now)
+    parser.add_argument("--delay", type=int, default=2)
+    parser.add_argument("--url", type=str)
+    parser.add_argument("--bucket", type=str)
+    args = parser.parse_args()
+
+    datetime_stop = datetime_now - datetime.timedelta(days=args.delay)
+    date_stop = datetime_stop.strftime("%Y-%m-%d")
     
-ingestorzin = Ingestor(
-    url = 'https://www.tabnews.com.br/api/v1/contents', 
-    per_page = 100,
-    bucket_name= 'platform-datalake-yan')
+    ingestor = Ingestor(
+        url = args.url, 
+        per_page = 100,
+        bucket_name= args.bucket)
 
-ingestorzin.get_until_dates('2023-06-15', '2023-06-01')
+    ingestor.get_until_dates(date_now, date_stop)
 
-
-
-# %%
+if __name__ == "__main__":
+    main()
